@@ -144,8 +144,8 @@ for i in c.find({"project":{"$in": include_project}}):
         landcover = i.get('landCoverType', ''),
         vegetation = i.get('vegetation', ''),
         project_id = project_id,
+        study_area_id = study_area_id,
     )
     d.save()
-    d.study_areas.set([study_area_id])
     c_map_data[str(i['_id'])] = d.id
 
