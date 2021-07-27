@@ -77,6 +77,9 @@ for i in project_list:
     p.save()
     pmap_data[str(i['_id'])] = p.id
 
+with open('pmap_data.json', 'w') as fp:
+    json.dump(pmap_data, fp)
+
 # out.write(json.dumps(pmap))
 
 # Study area
@@ -94,7 +97,10 @@ for i in sa.find({"project":{"$in": include_project}}):
     s = StudyArea(name=i['title']['zh-TW'], project_id=project_id)
     s.save()
     sa_map_data[str(i['_id'])] = s.id
+    print(s.id)
 
+with open('sa_map_data.json', 'w') as fp:
+    json.dump(sa_map_data, fp)
 
 # map sub studyarea
 for i in sa.find({"project":{"$in": include_project}}):
@@ -148,4 +154,7 @@ for i in c.find({"project":{"$in": include_project}}):
     )
     d.save()
     c_map_data[str(i['_id'])] = d.id
+
+with open('c_map_data.json', 'w') as fp:
+    json.dump(c_map_data, fp)
 
