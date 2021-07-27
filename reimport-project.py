@@ -149,6 +149,7 @@ for i in c.find({"project":{"$in": include_project}}):
         geodetic_datum = i.get('geodeticDatum', ''),
         landcover = i.get('landCoverType', ''),
         vegetation = i.get('vegetation', ''),
+        verbatim_locality = i.get('verbatimLocality', ''),
         project_id = project_id,
         study_area_id = study_area_id,
     )
