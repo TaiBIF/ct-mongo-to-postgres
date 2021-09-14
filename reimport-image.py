@@ -61,9 +61,9 @@ include_project = [ObjectId('5ce75c2d4d063e3d8279342f'), ObjectId('5ceb8377f974a
 
 subset_a = a.find({ "project": { "$in": include_project } })
 total_len = subset_a.count()
-img_map_data = {}
 
-for count in range(35841,total_len):
+# img_map_data = {}
+for count in range(0,total_len):
     print(count)
     i = subset_a[count]
     save_or_not = True
@@ -113,15 +113,16 @@ for count in range(35841,total_len):
     many = a.find({'filename': i.get('filename',''), 'time': i.get('time','')})
     id_list = [str(k['_id']) for k in many]
     if len(id_list) > 1:
-        # 如果有已經寫入的annotaion，抓出影像的psql id，update那張影像的annotaion
+        # 如果有已經寫入的annotaion，抓出影像，update那張影像的annotaion
         for l in id_list:
-            if l in img_map_data:
+            if Image.objects.filter(source_data__annotation___id__contains={'$oid':l}):
+                obj = Image.objects.get(source_data__annotation___id__contains={'$oid':l})
                 save_or_not = False
-                image_id = img_map_data[l]
-                anno = Image.objects.get(id=image_id).annotation
+                # image_id = img_map_data[l]
+                anno = obj.annotation
                 anno += annotations # append to list
                 # write back to db
-                obj = Image.objects.get(id=image_id)
+                # obj = Image.objects.get(source_data__annotation___id__contains={'$oid':l})
                 obj.annotation = anno
                 obj.save()
                 break
@@ -162,9 +163,9 @@ for count in range(35841,total_len):
             from_mongo = from_mongo
         )
         new_img.save()
-        img_map_data[str(i['_id'])] = new_img.id
+        # img_map_data[str(i['_id'])] = new_img.id
 
 
-with open('./ct-mongo-to-postgres/img_map_data.json', 'w') as fp:
-    json.dump(img_map_data, fp)
+# with open('./ct-mongo-to-postgres/img_map_data.json', 'w') as fp:
+#     json.dump(img_map_data, fp)
 
