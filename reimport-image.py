@@ -38,12 +38,34 @@ e = db['ExchangeableImageFiles']
 s = db['Species']
 d = db['DataFields']
 
+include_project = [ObjectId('5ce75c2d4d063e3d8279342f'), ObjectId('5ceb8377f974a93509bb457a'),
+                   ObjectId('5d2d459c968e42333ce6f015'), ObjectId('5d2ebb415778d9207444101d'),
+                   ObjectId('5d2ebb42d861e5e7833adefb'), ObjectId('5d6e1682d48bef0d6819790d'),
+                   ObjectId('5d6f2a6cd48bef40d1199705'), ObjectId('5d79f7cbce838b6f2edab41b'),
+                   ObjectId('5d96d825ce838b3a7de64931'), ObjectId('5d9d4c00d109e75584da37ab'),
+                   ObjectId('5da97133c641733c60b26808'), ObjectId('5da97799c64173dc91b2696e'),
+                   ObjectId('5de74aa011bd907ad8fff166'), ObjectId('5de74abc11bd904442fff1b4'),
+                   ObjectId('5ce75c2b4d063e53db7933f9'), ObjectId('5ceb7916f974a96b6ebb322b'),
+                   ObjectId('5ceb6101f974a9bd5fbb2a23'), ObjectId('5ceb73ccf974a9ddf4bb2fa8'),
+                   ObjectId('5ce7ed824d063e6da4794015'), ObjectId('5ceb7d46f974a946efbb3b84'), 
+                   ObjectId('5ceb8081f974a94c1fbb4383'), ObjectId('5ceb8026f974a9371bbb419d'), 
+                   ObjectId('5ceb804ff974a9a319bb4277'), ObjectId('5ceb7ec0f974a956f6bb3f39'), 
+                   ObjectId('5ce75c2c4d063eac2679340b'), 
+                   ObjectId('5ceb83dff974a96b6bbb4672'), ObjectId('5ceb4c95f974a93e4ebb22a0'), 
+                   ObjectId('5ceb83b5f974a9c396bb45ed'), ObjectId('5ceb58fbf974a96a90bb26f6'), 
+                   ObjectId('5ce75c2c4d063e010b79341d'), ObjectId('5ceb7e0df974a9ea6abb3da9'),
+                   ObjectId('5ceb49d3f974a9251dbb222d'), ObjectId('5ceb6902f974a9755fbb2d8b'),
+                   ObjectId('5ceb831ef974a98e39bb449e'), ObjectId('5ceb57e9f974a92b5bbb2567'),
+                   ObjectId('5ceb7c2ff974a98437bb3843'), ObjectId('5ceb83dcf974a9bcadbb465e'),
+                   ObjectId('5de74ace11bd90f94ffff2ed'), ObjectId('5de74afc11bd90f8fffff56e')]
+
+subset_a = a.find({ "project": { "$in": include_project } })
+total_len = subset_a.count()
 img_map_data = {}
 
-count = 0
-for i in a.find():
+for count in range(35841,total_len):
     print(count)
-    count += 1
+    i = subset_a[count]
     save_or_not = True
     t8 = i['time']+timedelta(hours=+8)
     img_datetime = timezone.make_aware(t8, pytz.timezone('Asia/Taipei'))
@@ -75,14 +97,17 @@ for i in a.find():
             current_field_value = ''
             if current_field['widgetType'] == 'select':
                 if j.get('value',''):
-                    select_id = j.get('value','').get('selectId','')
-                if select_id:
-                    current_field_value = d.find_one({"_id":j['dataField'], "options._id": select_id }, {'_id':0,'options.$': 1})
-                    if current_field_value:
-                        current_field_value = current_field_value['options'][0]['zh-TW']
+                    v = j.get('value','')
+                    select_id = v.get('selectId','') if v else ''
+                    if select_id:
+                        current_field_value = d.find_one({"_id":j['dataField'], "options._id": select_id }, {'_id':0,'options.$': 1})
+                        if current_field_value:
+                            current_field_value = current_field_value['options'][0]['zh-TW']
             else: # if text
-                current_field_value = j.get('value','').get('text','')
-        dic[current_field_key] = current_field_value
+                current_field_value = j.get('value','')
+                if current_field_value:
+                    current_field_value = current_field_value.get('text','')
+            dic[current_field_key] = current_field_value
     annotations.append(dic)
     # 一張多物種 filename & time will be the same
     many = a.find({'filename': i.get('filename',''), 'time': i.get('time','')})
@@ -138,8 +163,6 @@ for i in a.find():
         )
         new_img.save()
         img_map_data[str(i['_id'])] = new_img.id
-    # if count % 1000 == 0:
-    #     print(count)
 
 
 with open('./ct-mongo-to-postgres/img_map_data.json', 'w') as fp:
