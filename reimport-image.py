@@ -11,6 +11,9 @@ from bson.json_util import dumps
 from datetime import datetime, timedelta
 
 import PIL.Image
+import PIL.ImageFile
+PIL.ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 import requests
 from io import BytesIO
 from django.utils import timezone
@@ -63,7 +66,7 @@ subset_a = a.find({ "project": { "$in": include_project } })
 total_len = subset_a.count()
 
 # img_map_data = {}
-for count in range(0,total_len):
+for count in range(72127,total_len):
     print(count)
     i = subset_a[count]
     save_or_not = True
