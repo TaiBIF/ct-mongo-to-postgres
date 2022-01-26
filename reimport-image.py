@@ -19,6 +19,8 @@ from io import BytesIO
 from django.utils import timezone
 import pytz
 
+import threading
+
 client = MongoClient('mongodb://localhost:27017')
 db = client['cameraTrap_prod']
 projects = db['Projects']
@@ -65,8 +67,9 @@ include_project = [ObjectId('5ce75c2d4d063e3d8279342f'), ObjectId('5ceb8377f974a
 subset_a = a.find({ "project": { "$in": include_project } })
 total_len = subset_a.count()
 
-# img_map_data = {}
-for count in range(72127,total_len):
+# 先跑473266
+
+for count in range(502926,total_len):
     print(count)
     i = subset_a[count]
     save_or_not = True
@@ -145,7 +148,17 @@ for count in range(72127,total_len):
             if response.status_code == 200: # got image
                 img_file = PIL.Image.open(BytesIO(response.content)) # open image from remote url
                 img_hash = hashlib.md5(img_file.tobytes()).hexdigest() # make hash
-            file_url = f"{fid}.jpg"  # file object id
+                file_url = f"{fid}.jpg"  # file object id
+            else:
+                url = f'https://d3gg2vsgjlos1e.cloudfront.net/annotation-images/{fid}.jpg'
+                response = requests.get(url)
+                if response.status_code == 200: # got image
+                    try:
+                        img_file = PIL.Image.open(BytesIO(response.content)) # open image from remote url
+                        img_hash = hashlib.md5(img_file.tobytes()).hexdigest() # make hash
+                        file_url = f"{fid}.jpg"  # file object idexcept:
+                    except:
+                        pass
         current_file = f.find_one({'_id': ObjectId(fid)})
         if current_file:
             exif_id = current_file.get('exif', '')
@@ -166,9 +179,16 @@ for count in range(72127,total_len):
             from_mongo = from_mongo
         )
         new_img.save()
+    # with open(f"output.txt", "a") as myfile:
+    #     myfile.write(str(count) + "\n")
         # img_map_data[str(i['_id'])] = new_img.id
 
 
 # with open('./ct-mongo-to-postgres/img_map_data.json', 'w') as fp:
 #     json.dump(img_map_data, fp)
 
+
+
+
+# start_list = [140919, 1424544, 2849087]
+# end_list = [1424543, 2849088, total_len]
